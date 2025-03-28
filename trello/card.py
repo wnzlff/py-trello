@@ -116,6 +116,7 @@ class Card(TrelloBase):
         self.client = parent.client
         self.id = card_id
         self.name = name
+        self.start = None
 
         self.customFields = None
         self._checklists = None
@@ -143,6 +144,7 @@ class Card(TrelloBase):
         card._json_obj = json_obj
         card.desc = json_obj.get('desc', '')
         card.due = json_obj.get('due', '')
+        card.start = json_obj.get('start')
         card.is_due_complete = json_obj['dueComplete']
         card.closed = json_obj['closed']
         card.url = json_obj['url']
@@ -196,6 +198,7 @@ class Card(TrelloBase):
         self.pos = json_obj['pos']
         if json_obj.get('due', ''):
             self.due = json_obj.get('due', '')
+            self.start = json_obj.get('start')
         else:
             self.due = ''
         self.dateLastActivity = dateparser.parse(json_obj['dateLastActivity'])
@@ -538,7 +541,7 @@ class Card(TrelloBase):
         datestr = start.isoformat()
         self._set_remote_attribute('start', datestr)
         self.start = datestr
-        
+
     def set_reminder(self, reminder):
         """Set a reminder time for the card
 
@@ -817,5 +820,10 @@ class Card(TrelloBase):
         if cf_class is None:
             raise ValueError('Unknown custom field name specified ({})'.format(cf_name))
         return cf_class(self, 'unknown', cf_def_id, '')
+
+    @property
+    def start_date(self):
+        return dateparser.parse(self.start) if self.start else None
+
 
 from trello.trellolist import List
