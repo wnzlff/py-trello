@@ -821,22 +821,29 @@ class Card(TrelloBase):
             raise ValueError('Unknown custom field name specified ({})'.format(cf_name))
         return cf_class(self, 'unknown', cf_def_id, '')
 
-    def set_cover(self, color=None, attachment_id=None, brightness="light"):
+    def set_cover(self, color=None, attachment_id=None, brightness="light", size="normal"):
         """
         Set the card cover color or attachment.
 
-        :param color: str (one of "green", "yellow", "orange", "red", "purple", "blue", "sky", "lime", "pink", "black")
-        :param attachment_id: str (if you want to set an attachment as the cover)
-        :param brightness: str ("light" or "dark"), optional
+        :param color: str (e.g. "green", "blue", etc.)
+        :param attachment_id: str (optional)
+        :param brightness: "light" or "dark"
+        :param size: "normal" or "full"
         """
-        cover_data = {}
+        cover_data = {
+            "brightness": brightness,
+            "size": size,
+            "isTemplate": False
+        }
 
         if color:
-            cover_data['color'] = color
-            cover_data['brightness'] = brightness
-        if attachment_id:
-            cover_data['idAttachment'] = attachment_id
-            cover_data['brightness'] = brightness
+            cover_data["color"] = color
+            cover_data["idAttachment"] = None  # Clear previous attachment
+        elif attachment_id:
+            cover_data["idAttachment"] = attachment_id
+            cover_data["color"] = None  # Clear previous color
+        else:
+            raise ValueError("Either color or attachment_id must be provided.")
 
         self.client.fetch_json(
             f'/cards/{self.id}/cover',
